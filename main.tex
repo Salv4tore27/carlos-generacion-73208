@@ -1,0 +1,128 @@
+\documentclass[12pt,letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-nodecimaldot]{babel}
+\usepackage{newtxtext,newtxmath}
+\usepackage[margin=1in,headheight=15pt]{geometry}
+\usepackage{setspace,graphicx,booktabs,tabularx,caption,fancyhdr,xurl,hyperref,amsmath,titlesec,placeins,float,tikz}
+\usetikzlibrary{arrows.meta,positioning}
+\hypersetup{hidelinks,pdftitle={Generación de imágenes con redes adversarias y difusión latente},pdfauthor={Carlos Mario Salvatore Ocampo Aguilar}}
+\urlstyle{same}
+\doublespacing\setlength{\parindent}{0.5in}\setlength{\parskip}{0pt}
+\setcounter{secnumdepth}{0}
+\titleformat{\section}{\normalfont\bfseries\centering}{}{0pt}{}
+\titlespacing*{\section}{0pt}{0.5\baselineskip}{0.5\baselineskip}
+\pagestyle{fancy}\fancyhf{}\rhead{\thepage}\renewcommand{\headrulewidth}{0pt}
+\fancypagestyle{plain}{\fancyhf{}\rhead{\thepage}\renewcommand{\headrulewidth}{0pt}}
+\captionsetup[table]{justification=raggedright,singlelinecheck=false,labelsep=newline,labelfont=bf,textfont=it,skip=7pt}
+\captionsetup[figure]{justification=raggedright,singlelinecheck=false,labelsep=newline,labelfont=bf,textfont=it,skip=7pt}
+\addto\captionsspanish{\renewcommand{\tablename}{Tabla}}
+\newcommand{\refapa}[1]{\par\noindent\hangindent=0.5in\hangafter=1 #1\par}
+\begin{document}\raggedright
+\begin{titlepage}\thispagestyle{fancy}\begin{center}
+\vspace*{1.35in}{\bfseries Generación de imágenes con redes adversarias y difusión latente: un recorrido experimental\par}
+\vspace{\baselineskip}
+Carlos Mario Salvatore Ocampo Aguilar\par
+Universidad de Cundinamarca\par
+Especialización en Inteligencia Artificial\par
+604013 -- Deep Learning\par
+Docente: Wilson Mauro Rojas Reales\par
+25 de noviembre de 2026\par
+\end{center}\vfill\end{titlepage}
+\setcounter{page}{2}
+
+\begin{center}\textbf{Generación de imágenes con redes adversarias y difusión latente: un recorrido experimental}\end{center}
+\indent Este informe organiza dos prácticas de generación de imágenes. La primera explica el aprendizaje adversarial y deja un cuaderno DCGAN preparado para generar objetos y animales de CIFAR-10. La segunda describe un ajuste de Stable Diffusion mediante LoRA con pares imagen--texto de Pokémon. En una GAN, un generador propone ejemplos y un discriminador aprende a distinguirlos de los datos reales; ambos se actualizan de manera alternada (Goodfellow et al., 2014). En difusión latente, un autoencoder representa la imagen en un espacio comprimido y una U-Net aprende a retirar ruido condicionada por texto (Rombach et al., 2022).\par
+\indent La evidencia se separa por estado de ejecución. Las métricas consignadas corresponden a una GAN multicapa ejecutada localmente sobre dígitos de 8 $\times$ 8 píxeles, con semillas propias de esta versión. Los cuadernos DCGAN de CIFAR-10 y LoRA están preparados para Colab, pero sus entrenamientos aún no se han ejecutado. Por eso el informe no atribuye a esos modelos imágenes, pérdidas ni resultados inexistentes.\par
+\textbf{Palabras clave:} GAN, DCGAN, generación de imágenes, difusión latente, Stable Diffusion, LoRA.
+
+\section{Propósito y fundamentos}
+La actividad integra dos familias generativas. La GAN clásica plantea un juego adversarial: $G$ transforma ruido latente en una muestra sintética y $D$ estima si una entrada proviene de los datos o del generador (Goodfellow et al., 2014). La DCGAN reemplaza capas densas por convoluciones y convoluciones transpuestas, capaces de representar estructura espacial. En este trabajo se propone observar qué aprende una red pequeña al generar objetos de diez clases de CIFAR-10 (Krizhevsky, 2009; PyTorch, s. f.).\par
+Stable Diffusion lleva el proceso de difusión al espacio latente, de menor dimensión. El texto se convierte en embeddings que condicionan la predicción de ruido; el decodificador transforma el latente final en imagen (Bouchard, 2022; Rombach et al., 2022). LoRA añade matrices de bajo rango en capas seleccionadas y deja congelada la mayor parte de los pesos base, reduciendo los parámetros que se actualizan (Hu et al., 2021). Los scripts de Diffusers permiten adaptar modelos de texto a imagen y guardar los adaptadores aprendidos (Hugging Face, s. f.-a, s. f.-b).
+
+\section{Diseño de las prácticas}
+\subsection{GAN introductoria con dígitos}
+Se conserva una implementación NumPy de una GAN multicapa para mostrar el ciclo adversarial con recursos modestos. Se usó el conjunto \texttt{digits} de scikit-learn, con imágenes de 8 $\times$ 8 píxeles. Se ejecutaron cinco semillas (310--314), 1.400 actualizaciones por corrida, lotes de 64 y una medida MMD$^2$ frente a 256 imágenes reservadas. Esta línea base es didáctica y no equivale a la DCGAN de objetos descrita a continuación.
+
+\subsection{DCGAN de objetos con CIFAR-10}
+El cuaderno \texttt{\detokenize{Carlos_DCGAN_CIFAR10.ipynb}} usa CIFAR-10, un conjunto de diez clases, con imágenes RGB redimensionadas a 64 $\times$ 64 y normalizadas a $[-1,1]$. El generador recibe ruido de 100 componentes y aumenta la resolución mediante convoluciones transpuestas; el discriminador reduce la imagen con convoluciones estriadas y estima si es real o sintética. La configuración breve toma hasta 5.000 imágenes seleccionadas aleatoriamente y propone tres épocas para una GPU Colab. Las cuadrículas por época, la curva de pérdidas y el checkpoint se guardan en \texttt{\detokenize{/content/resultados_dcgan_cifar10}}. El cuaderno trabaja con etiquetas de categoría solo para revisar la composición de la muestra; el generador no recibe etiquetas y el experimento no es un clasificador.
+
+\subsection{Ajuste fino LoRA de Stable Diffusion}
+El cuaderno \texttt{\detokenize{Carlos_Diffusers_LoRA_Pokemon.ipynb}} usa Pokémon BLIP captions, conjunto con columnas \texttt{image} y \texttt{text} (Pinkney, 2022). Emplea el script \texttt{\detokenize{train_text_to_image_lora.py}} de Diffusers, resolución de 256 píxeles, lote 1, acumulación de gradientes 4, precisión FP16 y 300 pasos exploratorios, con semilla 1337. La comparación final mantiene iguales el prompt, la semilla y los pasos de inferencia para el modelo base y el adaptado. El checkpoint Stable Diffusion v1.5 requiere aceptar sus condiciones y autenticarse en Hugging Face; el notebook lee \texttt{HF\_TOKEN} desde Secretos de Colab, sin guardarlo en el archivo. La ejecución requiere GPU y acceso autorizado al modelo.
+
+\begin{figure}[H]
+\caption{Flujo de datos y entrenamiento de las dos prácticas}
+\centering
+\begin{tikzpicture}[node distance=0.65cm and 0.8cm, every node/.style={draw,rounded corners,align=center,minimum height=0.75cm,font=\small},arr/.style={-{Latex},thick}]
+\node (data1) {CIFAR-10\\objetos 64$\times$64};
+\node[right=of data1] (noise) {Ruido latente\\$z$};
+\node[right=of noise] (gen) {Generador\\DCGAN};
+\node[right=of gen] (dis) {Discriminador\\real / sintético};
+\draw[arr] (data1)--(dis); \draw[arr] (noise)--(gen); \draw[arr] (gen)--(dis); \draw[arr] (dis.south) -- ++(0,-0.65) -| (gen.south);
+\node[below=1.4cm of noise] (pairs) {Pokémon\\imagen + texto};
+\node[right=of pairs] (sd) {Stable Diffusion\\latente preentrenado};
+\node[right=of sd] (lora) {Adaptador\\LoRA};
+\node[right=of lora] (out) {Generación\\comparativa};
+\draw[arr] (pairs)--(sd); \draw[arr] (sd)--(lora); \draw[arr] (lora)--(out);
+\end{tikzpicture}
+\par\raggedright\vspace{5pt}\noindent\footnotesize\textit{Nota.} En la fila superior, G aprende con la señal de D. En la inferior, el modelo base se mantiene y se ajusta un adaptador de bajo rango. Elaboración propia.\normalsize
+\end{figure}
+
+\section{Resultados y evidencia disponible}
+La Tabla~\ref{tab:estado} separa resultados medidos de entrenamientos pendientes. En la GAN introductoria, el promedio MMD$^2$ bajó de 0,4191 antes del ajuste a 0,0175 al final; la referencia entre dos grupos reales fue 0,0053. La reducción indica que las muestras se acercaron a la distribución reservada bajo el núcleo usado, no que sean idénticas o perfectamente legibles. En las cinco corridas, la reducción estuvo entre 94,3\% y 97,3\%. Los valores se reproducen con \texttt{\detokenize{experimento_digitos.py}} y figuran en \texttt{\detokenize{resultados_carlos/metricas_por_semilla.csv}}.
+
+\begin{table}[H]
+\caption{Estado de ejecución y evidencia}
+\label{tab:estado}
+\small\begin{tabularx}{\textwidth}{p{0.22\textwidth}p{0.26\textwidth}X}
+\toprule
+Componente & Estado verificable & Evidencia incluida o pendiente \\
+\midrule
+GAN introductoria & Ejecutada en cinco semillas & CSV de métricas, curvas, mosaico y script reproducible \\
+DCGAN con CIFAR-10 & Cuaderno preparado; entrenamiento pendiente & Código de arquitectura y entrenamiento; agregar imágenes y curvas tras ejecutar \\
+Stable Diffusion + LoRA & Cuaderno preparado; ajuste pendiente & Script de entrenamiento y comparación; agregar registro y salidas tras ejecutar \\
+\bottomrule
+\end{tabularx}
+\par\raggedright\vspace{5pt}\noindent\footnotesize\textit{Nota.} No se generaron capturas ficticias. Los estados pendientes deben reemplazarse por evidencia real tras ejecutar los notebooks.\normalsize
+\end{table}
+
+\begin{figure}[H]
+\caption{MMD$^2$ inicial y final en cinco semillas de la GAN introductoria}
+\centering
+\begin{tikzpicture}[x=1.15cm,y=8cm]
+\draw (0,0) -- (6.0,0) node[right] {Semilla};
+\draw (0,0) -- (0,0.54) node[above] {MMD$^2$};
+\foreach \y in {0.0,0.1,0.2,0.3,0.4,0.5} {\draw[gray!25] (0,\y) -- (5.6,\y); \node[left] at (0,\y) {\scriptsize \y};}
+\foreach \x/\seed/\ini/\fin in {1/310/0.4312/0.0246,2/311/0.4156/0.0163,3/312/0.3767/0.0156,4/313/0.3939/0.0181,5/314/0.4778/0.0131} {
+  \draw[gray,thick] (\x,\ini)--(\x,\fin);
+  \fill[blue] (\x,\ini) circle (2pt);
+  \fill[orange] (\x,\fin) circle (2pt);
+  \node[below] at (\x,0) {\scriptsize \seed};
+}
+\node[anchor=west] at (4.4,0.49) {\textcolor{blue}{\rule{0.35cm}{0.08cm}} Inicial};
+\node[anchor=west] at (4.4,0.45) {\textcolor{orange}{\rule{0.35cm}{0.08cm}} Final};
+\end{tikzpicture}
+\par\raggedright\vspace{5pt}\noindent\footnotesize\textit{Nota.} Cada segmento corresponde a una semilla independiente. Los datos proceden de la GAN multicapa sobre dígitos 8$\times$8; no son resultados de DCGAN ni de LoRA.\normalsize
+\end{figure}
+
+\section{Análisis y consideraciones de uso}
+Las GAN son sensibles a inicialización, razón de aprendizaje y balance entre generador y discriminador. Una pérdida baja no prueba diversidad; por eso conviene revisar muestras fijas y repetir semillas. La corrida breve propuesta con CIFAR-10 busca documentar el flujo y puede producir objetos borrosos, mezclas entre categorías o muestras repetitivas.\par
+LoRA reduce los pesos que se ajustan, pero un conjunto pequeño puede causar sobreajuste. La comparación visual debe examinar si captions e imágenes se corresponden y describir límites sin afirmar mejoras no medidas. Antes de redistribuir imágenes o pesos se deben revisar las licencias del checkpoint y los datos. Las imágenes generadas pueden reflejar sesgos de las colecciones usadas; el trabajo no propone decisiones automatizadas sobre personas.
+
+\section{Conclusiones}
+Las prácticas presentan dos mecanismos distintos: competencia entre dos redes en una GAN y eliminación iterativa de ruido condicionada por texto en difusión latente. La GAN pequeña mostró reducción de MMD$^2$ en las cinco semillas, aunque su resolución y la métrica limitan lo que puede concluirse. Los notebooks DCGAN-CIFAR-10 y LoRA dejan un procedimiento reproducible, pero deben ejecutarse en Colab para obtener imágenes, pérdidas y registros reales. Ese paso es necesario antes de describirlos como resultados experimentales completados.
+
+\section{Referencias}
+\refapa{Bouchard, L.-F. (2022, 28 de agosto). Latent diffusion models: The architecture behind Stable Diffusion. \textit{Towards AI}. \url{https://pub.towardsai.net/latent-diffusion-models-the-architecture-behind-stable-diffusion-434ba7d91108}}
+\refapa{Goodfellow, I., Pouget-Abadie, J., Mirza, M., Xu, B., Warde-Farley, D., Ozair, S., Courville, A., \& Bengio, Y. (2014). Generative adversarial nets. \textit{Advances in Neural Information Processing Systems, 27}. \url{https://papers.nips.cc/paper/5423-generative-adversarial-nets}}
+\refapa{Hugging Face. (s. f.-a). \textit{Text-to-image fine-tuning}. Diffusers documentation. \url{https://huggingface.co/docs/diffusers/en/training/text2image}}
+\refapa{Hugging Face. (s. f.-b). \textit{LoRA support in Diffusers}. \url{https://huggingface.co/docs/diffusers/v0.13.0/training/lora}}
+\refapa{Hu, E. J., Shen, Y., Wallis, P., Allen-Zhu, Z., Li, Y., Wang, S., Wang, L., \& Chen, W. (2021). LoRA: Low-rank adaptation of large language models. \textit{International Conference on Learning Representations}. \url{https://openreview.net/forum?id=nZeVKeeFYf9}}
+\refapa{Krizhevsky, A. (2009). Learning multiple layers of features from tiny images. University of Toronto. \url{https://www.cs.toronto.edu/~kriz/learning-features-2009-TR.pdf}}
+\refapa{Mohr, F. (2017, 4 de noviembre). Implementing a generative adversarial network (GAN/DCGAN) to draw human faces. \textit{Towards Data Science}. \url{https://medium.com/data-science/implementing-a-generative-adversarial-network-gan-dcgan-to-draw-human-faces-8291616904a}}
+\refapa{Pinkney, J. N. M. (2022). \textit{Pokémon BLIP captions} [Conjunto de datos]. Hugging Face. \url{https://huggingface.co/datasets/lambdalabs/pokemon-blip-captions}}
+\refapa{PyTorch. (s. f.). \textit{DCGAN tutorial}. \url{https://docs.pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html}}
+\refapa{Rombach, R., Blattmann, A., Lorenz, D., Esser, P., \& Ommer, B. (2022). High-resolution image synthesis with latent diffusion models. En \textit{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition} (pp. 10684--10695). \url{https://doi.org/10.1109/CVPR52688.2022.01042}}
+\end{document}
+
+
