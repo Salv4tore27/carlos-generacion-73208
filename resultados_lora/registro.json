@@ -1,0 +1,11 @@
+{
+  "fecha_utc": "2026-11-26T00:30:37.869905-05:00",
+  "gpu": "Tesla T4",
+  "base_model": "stable-diffusion-v1-5/stable-diffusion-v1-5",
+  "dataset": "Fashion-MNIST (muestra balanceada de 500 imágenes)",
+  "resolution": 256,
+  "steps_requested": 200,
+  "seed": 42,
+  "prompt": "a small grayscale catalog image of a sneaker on a plain background",
+  "observacion": "Comparación revisada: la salida base conserva más detalle; la salida LoRA mantiene la silueta del calzado pero se ve más difusa. Observación cualitativa de un prompt y una semilla."
+}

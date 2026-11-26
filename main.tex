@@ -26,14 +26,14 @@ Carlos Mario Salvatore Ocampo Aguilar\par
 Universidad de Cundinamarca\par
 Especialización en Inteligencia Artificial\par
 604013 -- Deep Learning\par
-Docente: Wilson Mauro Rojas Reales\par
+Docente: Nidia Stella García Roa\par
 25 de noviembre de 2026\par
 \end{center}\vfill\end{titlepage}
 \setcounter{page}{2}
 
 \begin{center}\textbf{Generación de imágenes con redes adversarias y difusión latente: un recorrido experimental}\end{center}
-\indent Este informe organiza dos prácticas de generación de imágenes. La primera implementa una DCGAN para generar objetos y animales de CIFAR-10; su entrenamiento se completó en Colab con GPU T4. La segunda describe un ajuste de Stable Diffusion mediante LoRA con pares imagen--texto construidos a partir de Fashion-MNIST. En una GAN, un generador propone ejemplos y un discriminador aprende a distinguirlos de los datos reales; ambos se actualizan de manera alternada (Goodfellow et al., 2014). En difusión latente, un autoencoder representa la imagen en un espacio comprimido y una U-Net aprende a retirar ruido condicionada por texto (Rombach et al., 2022).\par
-\indent La evidencia reúne dos ejecuciones distintas. La GAN multicapa sobre dígitos de 8 $\times$ 8 se ejecutó localmente con cinco semillas. Además, la DCGAN se ejecutó en Colab con GPU T4 sobre un subconjunto de CIFAR-10 de 5.000 imágenes durante tres épocas. El ajuste LoRA está implementado en un cuaderno reproducible, pero todavía está pendiente de ejecución; no se reportan resultados de LoRA como si ya se hubiera entrenado.\par
+\indent Este informe presenta tres ejercicios de generación de imágenes: una GAN introductoria sobre dígitos, una DCGAN entrenada con CIFAR-10 y un ajuste LoRA de Stable Diffusion con ejemplos de Fashion-MNIST. Se describen sus configuraciones, los resultados observados y los límites de cada prueba. En una GAN, un generador propone ejemplos y un discriminador aprende a distinguirlos de los datos reales; ambos se actualizan de manera alternada (Goodfellow et al., 2014). En difusión latente, un autoencoder representa la imagen en un espacio comprimido y una U-Net aprende a retirar ruido condicionada por texto (Rombach et al., 2022).\par
+\indent La evidencia reúne tres ejecuciones: una GAN multicapa sobre dígitos de 8 $\times$ 8, una DCGAN sobre 5.000 imágenes de CIFAR-10 y un ajuste LoRA de Stable Diffusion con 500 ejemplos balanceados de Fashion-MNIST. Las dos primeras se ejecutaron localmente y en Colab, respectivamente; el ajuste LoRA se entrenó durante 200 pasos en una GPU T4. Para la comparación visual se mantuvieron el mismo prompt y la misma semilla en el modelo base y en el adaptado.\par
 \textbf{Palabras clave:} GAN, DCGAN, generación de imágenes, difusión latente, Stable Diffusion, LoRA.
 
 \section{Propósito y fundamentos}
@@ -63,7 +63,32 @@ El cuaderno \texttt{\detokenize{Carlos_DCGAN_CIFAR10.ipynb}} usa CIFAR-10, un co
 \end{table}
 
 \subsection{Ajuste fino LoRA de Stable Diffusion}
-El cuaderno \texttt{\detokenize{Carlos_Diffusers_LoRA_FashionMNIST.ipynb}} parte de Fashion-MNIST, conjunto balanceado de 70.000 imágenes de prendas en diez categorías; aquí se seleccionan 500 ejemplos, 50 por clase (Xiao et al., 2017; Zalando Research, 2017). Para emplear el script \texttt{\detokenize{train_text_to_image_lora.py}} de Diffusers, las imágenes se convierten a RGB y las etiquetas se transforman en descripciones textuales sencillas. La configuración prevista es resolución de 256 píxeles, lote 1, acumulación de gradientes 4, precisión FP16, 200 pasos y semilla 42. La comparación mantiene iguales el prompt, la semilla y los pasos de inferencia para el modelo base y el adaptado. El checkpoint base es público y el cuaderno lo descarga sin token. Se deben respetar las condiciones CreativeML OpenRAIL-M antes de redistribuir sus pesos o derivados.
+El cuaderno \texttt{\detokenize{Carlos_Diffusers_LoRA_FashionMNIST.ipynb}} parte de Fashion-MNIST, conjunto de 70.000 imágenes de prendas distribuidas en diez categorías. Para esta prueba se seleccionaron 500 ejemplos, 50 por clase (Xiao et al., 2017; Zalando Research, 2017). Las imágenes se convirtieron a RGB y las etiquetas se expresaron con descripciones textuales sencillas para el script \texttt{\detokenize{train_text_to_image_lora.py}} de Diffusers. El entrenamiento se completó en Colab sobre una GPU Tesla T4: resolución de 256 píxeles, lote 1, acumulación de gradientes 4, precisión FP16, 200 pasos y semilla 42. El último valor de pérdida registrado fue 0,0263. Este valor describe el objetivo de entrenamiento y por sí solo no mide realismo ni correspondencia semántica.\par
+La comparación de inferencia usó el prompt \texttt{a small grayscale catalog image of a sneaker on a plain background}, semilla 42, 25 pasos y escala de guía 7,0 tanto para el modelo base como para el adaptador. En la Figura~\ref{fig:lora} se observa que ambas salidas conservan la silueta de un calzado; la imagen adaptada tiene bordes más suaves y menos detalle que la base. Esta única comparación no demuestra una mejora general. El cuaderno guardó el adaptador entrenado como \texttt{pytorch\_lora\_weights.safetensors}; las salidas y el registro de ejecución se incluyen con el código. El checkpoint base es público y el cuaderno lo descarga sin token. Se deben respetar las condiciones CreativeML OpenRAIL-M antes de redistribuir sus pesos o derivados.
+
+\begin{table}[H]
+\caption{Configuración y evidencia de la prueba LoRA}
+\label{tab:lora}
+\begin{tabularx}{\linewidth}{p{0.30\linewidth}X}
+\toprule
+Elemento & Registro de ejecución \\
+\midrule
+Datos & Fashion-MNIST, 500 imágenes (50 por cada una de las diez clases) \\
+Entrenamiento & 200 pasos; GPU Tesla T4; FP16; pérdida final registrada: 0,0263 \\
+Inferencia comparada & Prompt fijo; semilla 42; 25 pasos; escala de guía 7,0 \\
+Artefactos & Adaptador LoRA y salidas base, adaptada y comparativa generadas en Colab \\
+\bottomrule
+\end{tabularx}
+\par\raggedright\vspace{5pt}\noindent\footnotesize\textit{Nota.} La pérdida de entrenamiento no debe interpretarse como una medida directa de calidad perceptual. La comparación visual es cualitativa y corresponde a un solo prompt.\normalsize
+\end{table}
+
+\begin{figure}[htbp]
+\caption{Comparación de generación con el modelo base y el adaptador LoRA}
+\label{fig:lora}
+\centering
+\includegraphics[width=\linewidth]{resultados_lora/comparacion.png}
+\par\raggedright\vspace{5pt}\noindent\footnotesize\textit{Nota.} Se usaron el mismo prompt, la semilla 42, 25 pasos y escala de guía 7,0. La salida LoRA mantiene la forma general del calzado, aunque aparece más difusa.\normalsize
+\end{figure}
 
 \begin{figure}[H]
 \caption{Flujo de datos y entrenamiento de las dos prácticas}
@@ -84,7 +109,7 @@ El cuaderno \texttt{\detokenize{Carlos_Diffusers_LoRA_FashionMNIST.ipynb}} parte
 \end{figure}
 
 \section{Resultados y evidencia disponible}
-La Tabla~\ref{tab:estado} distingue las prácticas ejecutadas de la práctica LoRA aún pendiente. En la GAN introductoria, el promedio MMD$^2$ bajó de 0,4191 antes del ajuste a 0,0175 al final; la referencia entre dos grupos reales fue 0,0053. La reducción indica que las muestras se acercaron a la distribución reservada bajo el núcleo usado, no que sean idénticas o perfectamente legibles. En las cinco corridas, la reducción estuvo entre 94,3\% y 97,3\%. Los valores se reproducen con \texttt{\detokenize{experimento_digitos.py}} y figuran en \texttt{\detokenize{resultados_carlos/metricas_por_semilla.csv}}.
+La Tabla~\ref{tab:estado} resume las tres prácticas ejecutadas. En la GAN introductoria, el promedio MMD$^2$ bajó de 0,4191 antes del ajuste a 0,0175 al final; la referencia entre dos grupos reales fue 0,0053. La reducción indica que las muestras se acercaron a la distribución reservada bajo el núcleo usado, no que sean idénticas o perfectamente legibles. En las cinco corridas, la reducción estuvo entre 94,3\% y 97,3\%. Los valores se reproducen con \texttt{\detokenize{experimento_digitos.py}} y figuran en \texttt{\detokenize{resultados_carlos/metricas_por_semilla.csv}}.
 
 \begin{table}[H]
 \caption{Estado de ejecución y evidencia}
@@ -95,10 +120,10 @@ Componente & Estado verificable & Evidencia incluida o pendiente \\
 \midrule
 GAN introductoria & Ejecutada en cinco semillas & CSV de métricas, curvas, mosaico y script reproducible \\
 DCGAN con CIFAR-10 & Ejecutada en Colab T4; 5.000 imágenes, 3 épocas & Registro de pérdidas y figuras generadas en Colab; conservar también el cuaderno ejecutado como evidencia \\
-Stable Diffusion + LoRA & Configuración adaptada a Fashion-MNIST; ejecución pendiente & Notebook; faltan adaptador entrenado, imágenes de comparación y registro real de pérdida \\
+Stable Diffusion + LoRA & Entrenada en Colab T4; 500 imágenes y 200 pasos & Pérdida final 0,0263; adaptador y comparación base/adaptada generados en el cuaderno \\
 \bottomrule
 \end{tabularx}
-\par\raggedright\vspace{5pt}\noindent\footnotesize\textit{Nota.} La DCGAN sí se ejecutó y produjo las salidas descritas; la corrida es breve y no demuestra calidad de producción. LoRA se adaptó a Fashion-MNIST, pero su ejecución en Colab continúa pendiente.\normalsize
+\par\raggedright\vspace{5pt}\noindent\footnotesize\textit{Nota.} Las tres prácticas se ejecutaron. Las corridas de DCGAN y LoRA son exploratorias; ni las pérdidas ni una sola comparación bastan para certificar calidad de producción o superioridad general.\normalsize
 \end{table}
 
 \begin{figure}[H]
@@ -122,10 +147,13 @@ Stable Diffusion + LoRA & Configuración adaptada a Fashion-MNIST; ejecución pe
 
 \section{Análisis y consideraciones de uso}
 Las GAN son sensibles a inicialización, razón de aprendizaje y balance entre generador y discriminador. Una pérdida baja no prueba diversidad; por eso conviene revisar muestras fijas y repetir semillas. La corrida breve propuesta con CIFAR-10 busca documentar el flujo y puede producir objetos borrosos, mezclas entre categorías o muestras repetitivas.\par
-LoRA reduce los pesos que se ajustan, pero un conjunto pequeño puede causar sobreajuste. La comparación visual debe examinar si captions e imágenes se corresponden y describir límites sin afirmar mejoras no medidas. Antes de redistribuir imágenes o pesos se deben revisar las licencias del checkpoint y los datos. Las imágenes generadas pueden reflejar sesgos de las colecciones usadas; el trabajo no propone decisiones automatizadas sobre personas.
+LoRA reduce los pesos que se ajustan, pero un conjunto pequeño puede causar sobreajuste. En esta prueba, una sola comparación con semilla fija permite revisar el resultado del prompt elegido; no sustituye una evaluación con varios textos, semillas y métricas perceptuales. La pérdida final de 0,0263 documenta el estado de optimización, no una calificación de calidad de imagen. Antes de redistribuir imágenes o pesos se deben revisar las licencias del checkpoint y los datos. Las imágenes generadas pueden reflejar sesgos de las colecciones usadas; el trabajo no propone decisiones automatizadas sobre personas.
 
 \section{Conclusiones}
-Las prácticas presentan dos mecanismos distintos: competencia entre dos redes en una GAN y eliminación iterativa de ruido condicionada por texto en difusión latente. La GAN pequeña mostró reducción de MMD$^2$ en las cinco semillas, aunque su resolución y la métrica limitan lo que puede concluirse. La corrida de DCGAN en CIFAR-10 completó tres épocas y produjo registros y muestras, aunque su duración corta y el desequilibrio entre pérdidas limitan las conclusiones sobre calidad. La práctica LoRA queda configurada para un conjunto de prendas con licencia MIT y una comparación controlada; todavía se deben completar los pasos en Colab y registrar las imágenes y pérdidas observadas antes de presentarla como resultado experimental.
+Las prácticas muestran mecanismos distintos: competencia entre dos redes en una GAN y eliminación iterativa de ruido condicionada por texto en difusión latente. La GAN pequeña redujo MMD$^2$ en las cinco semillas, aunque su resolución y la métrica limitan lo que puede concluirse. La DCGAN completó tres épocas y produjo registros y muestras, pero la corrida breve no permite afirmar que sus imágenes sean de calidad de producción. El ajuste LoRA se entrenó durante 200 pasos y produjo un adaptador y una comparación reproducible con prompt y semilla fijos. En esa comparación las diferencias fueron moderadas; por tanto, el resultado demuestra que el flujo se ejecutó, pero no que el ajuste sea superior en general. Para una evaluación más sólida harían falta más prompts, semillas y criterios perceptuales.
+
+\section{Código y cuadernos}
+Los scripts, cuadernos ejecutados y artefactos reproducibles están disponibles en el repositorio del proyecto: \url{https://github.com/Salv4tore27/carlos-generacion-73208}. Las salidas de Colab deben interpretarse junto con la configuración y las limitaciones descritas en este informe.
 
 \section{Referencias}
 \refapa{Bouchard, L.-F. (2022, 28 de agosto). Latent diffusion models: The architecture behind Stable Diffusion. \textit{Towards AI}. \url{https://pub.towardsai.net/latent-diffusion-models-the-architecture-behind-stable-diffusion-434ba7d91108}}
@@ -141,5 +169,3 @@ Las prácticas presentan dos mecanismos distintos: competencia entre dos redes e
 \refapa{PyTorch. (s. f.). \textit{DCGAN tutorial}. \url{https://docs.pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html}}
 \refapa{Rombach, R., Blattmann, A., Lorenz, D., Esser, P., \& Ommer, B. (2022). High-resolution image synthesis with latent diffusion models. En \textit{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition} (pp. 10684--10695). \url{https://doi.org/10.1109/CVPR52688.2022.01042}}
 \end{document}
-
-
