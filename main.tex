@@ -32,12 +32,12 @@ Docente: Wilson Mauro Rojas Reales\par
 \setcounter{page}{2}
 
 \begin{center}\textbf{Generación de imágenes con redes adversarias y difusión latente: un recorrido experimental}\end{center}
-\indent Este informe organiza dos prácticas de generación de imágenes. La primera explica el aprendizaje adversarial y deja un cuaderno DCGAN preparado para generar objetos y animales de CIFAR-10. La segunda describe un ajuste de Stable Diffusion mediante LoRA con pares imagen--texto de Pokémon. En una GAN, un generador propone ejemplos y un discriminador aprende a distinguirlos de los datos reales; ambos se actualizan de manera alternada (Goodfellow et al., 2014). En difusión latente, un autoencoder representa la imagen en un espacio comprimido y una U-Net aprende a retirar ruido condicionada por texto (Rombach et al., 2022).\par
+\indent Este informe organiza dos prácticas de generación de imágenes. La primera implementa una DCGAN para generar objetos y animales de CIFAR-10; su entrenamiento se completó en Colab con GPU T4. La segunda describe un ajuste de Stable Diffusion mediante LoRA con pares imagen--texto de Pokémon. En una GAN, un generador propone ejemplos y un discriminador aprende a distinguirlos de los datos reales; ambos se actualizan de manera alternada (Goodfellow et al., 2014). En difusión latente, un autoencoder representa la imagen en un espacio comprimido y una U-Net aprende a retirar ruido condicionada por texto (Rombach et al., 2022).\par
 \indent La evidencia reúne dos ejecuciones distintas. La GAN multicapa sobre dígitos de 8 $\times$ 8 se ejecutó localmente con cinco semillas. Además, la DCGAN se ejecutó en Colab con GPU T4 sobre un subconjunto de CIFAR-10 de 5.000 imágenes durante tres épocas. El ajuste LoRA está implementado en un cuaderno reproducible, pero todavía requiere una cuenta de Hugging Face con acceso autorizado al modelo base; no se reportan resultados de LoRA como si ya se hubiera entrenado.\par
 \textbf{Palabras clave:} GAN, DCGAN, generación de imágenes, difusión latente, Stable Diffusion, LoRA.
 
 \section{Propósito y fundamentos}
-La actividad integra dos familias generativas. La GAN clásica plantea un juego adversarial: $G$ transforma ruido latente en una muestra sintética y $D$ estima si una entrada proviene de los datos o del generador (Goodfellow et al., 2014). La DCGAN reemplaza capas densas por convoluciones y convoluciones transpuestas, capaces de representar estructura espacial. En este trabajo se propone observar qué aprende una red pequeña al generar objetos de diez clases de CIFAR-10 (Krizhevsky, 2009; PyTorch, s. f.).\par
+La actividad integra dos familias generativas. La GAN clásica plantea un juego adversarial: $G$ transforma ruido latente en una muestra sintética y $D$ estima si una entrada proviene de los datos o del generador (Goodfellow et al., 2014). La DCGAN reemplaza capas densas por convoluciones y convoluciones transpuestas, capaces de representar estructura espacial. En este trabajo se observó el entrenamiento de una red pequeña para generar objetos de diez clases de CIFAR-10 (Krizhevsky, 2009; PyTorch, s. f.).\par
 Stable Diffusion lleva el proceso de difusión al espacio latente, de menor dimensión. El texto se convierte en embeddings que condicionan la predicción de ruido; el decodificador transforma el latente final en imagen (Bouchard, 2022; Rombach et al., 2022). LoRA añade matrices de bajo rango en capas seleccionadas y deja congelada la mayor parte de los pesos base, reduciendo los parámetros que se actualizan (Hu et al., 2021). Los scripts de Diffusers permiten adaptar modelos de texto a imagen y guardar los adaptadores aprendidos (Hugging Face, s. f.-a, s. f.-b).
 
 \section{Diseño de las prácticas}
@@ -46,6 +46,21 @@ Se conserva una implementación NumPy de una GAN multicapa para mostrar el ciclo
 
 \subsection{DCGAN de objetos con CIFAR-10}
 El cuaderno \texttt{\detokenize{Carlos_DCGAN_CIFAR10.ipynb}} usa CIFAR-10, un conjunto de diez clases, con imágenes RGB redimensionadas a 64 $\times$ 64 y normalizadas a $[-1,1]$. El generador recibe ruido de 100 componentes y aumenta la resolución mediante convoluciones transpuestas; el discriminador reduce la imagen con convoluciones estriadas y estima si es real o sintética. La configuración breve toma hasta 5.000 imágenes seleccionadas aleatoriamente y ejecuta tres épocas en una GPU Colab. La corrida completó tres épocas en Colab con GPU T4 (PyTorch 2.14.1+cu130), 78 lotes por época y un subconjunto de 5.000 imágenes. Las pérdidas registradas al cierre de cada época fueron $D=(0{,}365; 0{,}028; 0{,}010)$ y $G=(2{,}457; 4{,}561; 5{,}600)$. El cuaderno generó las cuadrículas de cada época, una gráfica de pérdidas y un checkpoint dentro de \texttt{\detokenize{/content/resultados_dcgan_cifar10}}. La caída de la pérdida del discriminador junto con el aumento de la del generador sugiere que, en esta corrida corta, el discriminador aprendió con rapidez; no es evidencia suficiente de calidad visual ni de diversidad. El cuaderno trabaja con etiquetas de categoría solo para revisar la composición de la muestra; el generador no recibe etiquetas y el experimento no es un clasificador.
+
+\begin{table}[H]
+\caption{Pérdidas al cierre de cada época de la DCGAN}
+\label{tab:perdidas-dcgan}
+\begin{tabularx}{\linewidth}{cXX}
+\toprule
+Época & Discriminador ($D$) & Generador ($G$) \\
+\midrule
+1 & 0,365 & 2,457 \\
+2 & 0,028 & 4,561 \\
+3 & 0,010 & 5,600 \\
+\bottomrule
+\end{tabularx}
+\par\raggedright\vspace{5pt}\noindent\footnotesize\textit{Nota.} Valores impresos por el cuaderno de Colab al final de cada época; la corrida usó una GPU T4 y 5.000 imágenes.\normalsize
+\end{table}
 
 \subsection{Ajuste fino LoRA de Stable Diffusion}
 El cuaderno \texttt{\detokenize{Carlos_Diffusers_LoRA_Pokemon.ipynb}} usa Pokémon BLIP captions, conjunto con columnas \texttt{image} y \texttt{text} (Pinkney, 2022). Emplea el script \texttt{\detokenize{train_text_to_image_lora.py}} de Diffusers, resolución de 256 píxeles, lote 1, acumulación de gradientes 4, precisión FP16 y 300 pasos exploratorios, con semilla 1337. La comparación final mantiene iguales el prompt, la semilla y los pasos de inferencia para el modelo base y el adaptado. El checkpoint Stable Diffusion v1.5 requiere aceptar sus condiciones y autenticarse en Hugging Face; el notebook lee \texttt{HF\_TOKEN} desde Secretos de Colab, sin guardarlo en el archivo. La ejecución requiere GPU y acceso autorizado al modelo.
