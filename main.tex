@@ -32,8 +32,8 @@ Docente: Wilson Mauro Rojas Reales\par
 \setcounter{page}{2}
 
 \begin{center}\textbf{Generación de imágenes con redes adversarias y difusión latente: un recorrido experimental}\end{center}
-\indent Este informe organiza dos prácticas de generación de imágenes. La primera implementa una DCGAN para generar objetos y animales de CIFAR-10; su entrenamiento se completó en Colab con GPU T4. La segunda describe un ajuste de Stable Diffusion mediante LoRA con pares imagen--texto de Pokémon. En una GAN, un generador propone ejemplos y un discriminador aprende a distinguirlos de los datos reales; ambos se actualizan de manera alternada (Goodfellow et al., 2014). En difusión latente, un autoencoder representa la imagen en un espacio comprimido y una U-Net aprende a retirar ruido condicionada por texto (Rombach et al., 2022).\par
-\indent La evidencia reúne dos ejecuciones distintas. La GAN multicapa sobre dígitos de 8 $\times$ 8 se ejecutó localmente con cinco semillas. Además, la DCGAN se ejecutó en Colab con GPU T4 sobre un subconjunto de CIFAR-10 de 5.000 imágenes durante tres épocas. El ajuste LoRA está implementado en un cuaderno reproducible, pero todavía requiere una cuenta de Hugging Face con acceso autorizado al modelo base; no se reportan resultados de LoRA como si ya se hubiera entrenado.\par
+\indent Este informe organiza dos prácticas de generación de imágenes. La primera implementa una DCGAN para generar objetos y animales de CIFAR-10; su entrenamiento se completó en Colab con GPU T4. La segunda describe un ajuste de Stable Diffusion mediante LoRA con pares imagen--texto construidos a partir de Fashion-MNIST. En una GAN, un generador propone ejemplos y un discriminador aprende a distinguirlos de los datos reales; ambos se actualizan de manera alternada (Goodfellow et al., 2014). En difusión latente, un autoencoder representa la imagen en un espacio comprimido y una U-Net aprende a retirar ruido condicionada por texto (Rombach et al., 2022).\par
+\indent La evidencia reúne dos ejecuciones distintas. La GAN multicapa sobre dígitos de 8 $\times$ 8 se ejecutó localmente con cinco semillas. Además, la DCGAN se ejecutó en Colab con GPU T4 sobre un subconjunto de CIFAR-10 de 5.000 imágenes durante tres épocas. El ajuste LoRA está implementado en un cuaderno reproducible, pero todavía está pendiente de ejecución; no se reportan resultados de LoRA como si ya se hubiera entrenado.\par
 \textbf{Palabras clave:} GAN, DCGAN, generación de imágenes, difusión latente, Stable Diffusion, LoRA.
 
 \section{Propósito y fundamentos}
@@ -63,7 +63,7 @@ El cuaderno \texttt{\detokenize{Carlos_DCGAN_CIFAR10.ipynb}} usa CIFAR-10, un co
 \end{table}
 
 \subsection{Ajuste fino LoRA de Stable Diffusion}
-El cuaderno \texttt{\detokenize{Carlos_Diffusers_LoRA_Pokemon.ipynb}} usa Pokémon BLIP captions, conjunto con columnas \texttt{image} y \texttt{text} (Pinkney, 2022). Emplea el script \texttt{\detokenize{train_text_to_image_lora.py}} de Diffusers, resolución de 256 píxeles, lote 1, acumulación de gradientes 4, precisión FP16 y 300 pasos exploratorios, con semilla 1337. La comparación final mantiene iguales el prompt, la semilla y los pasos de inferencia para el modelo base y el adaptado. El checkpoint Stable Diffusion v1.5 requiere aceptar sus condiciones y autenticarse en Hugging Face; el notebook lee \texttt{HF\_TOKEN} desde Secretos de Colab, sin guardarlo en el archivo. La ejecución requiere GPU y acceso autorizado al modelo.
+El cuaderno \texttt{\detokenize{Carlos_Diffusers_LoRA_FashionMNIST.ipynb}} parte de Fashion-MNIST, conjunto balanceado de 70.000 imágenes de prendas en diez categorías; aquí se seleccionan 500 ejemplos, 50 por clase (Xiao et al., 2017; Zalando Research, 2017). Para emplear el script \texttt{\detokenize{train_text_to_image_lora.py}} de Diffusers, las imágenes se convierten a RGB y las etiquetas se transforman en descripciones textuales sencillas. La configuración prevista es resolución de 256 píxeles, lote 1, acumulación de gradientes 4, precisión FP16, 200 pasos y semilla 42. La comparación mantiene iguales el prompt, la semilla y los pasos de inferencia para el modelo base y el adaptado. El cuaderno lee \texttt{HF\_TOKEN} desde Secretos de Colab y no guarda el token en el archivo.
 
 \begin{figure}[H]
 \caption{Flujo de datos y entrenamiento de las dos prácticas}
@@ -74,7 +74,7 @@ El cuaderno \texttt{\detokenize{Carlos_Diffusers_LoRA_Pokemon.ipynb}} usa Pokém
 \node[right=of noise] (gen) {Generador\\DCGAN};
 \node[right=of gen] (dis) {Discriminador\\real / sintético};
 \draw[arr] (data1)--(dis); \draw[arr] (noise)--(gen); \draw[arr] (gen)--(dis); \draw[arr] (dis.south) -- ++(0,-0.65) -| (gen.south);
-\node[below=1.4cm of noise] (pairs) {Pokémon\\imagen + texto};
+\node[below=1.4cm of noise] (pairs) {Fashion-MNIST\\prenda + etiqueta};
 \node[right=of pairs] (sd) {Stable Diffusion\\latente preentrenado};
 \node[right=of sd] (lora) {Adaptador\\LoRA};
 \node[right=of lora] (out) {Generación\\comparativa};
@@ -95,10 +95,10 @@ Componente & Estado verificable & Evidencia incluida o pendiente \\
 \midrule
 GAN introductoria & Ejecutada en cinco semillas & CSV de métricas, curvas, mosaico y script reproducible \\
 DCGAN con CIFAR-10 & Ejecutada en Colab T4; 5.000 imágenes, 3 épocas & Registro de pérdidas y figuras generadas en Colab; conservar también el cuaderno ejecutado como evidencia \\
-Stable Diffusion + LoRA & Código preparado; ajuste pendiente de ejecutar & Notebook y script de entrenamiento; faltan checkpoint LoRA, imágenes de comparación y registro de pérdida \\
+Stable Diffusion + LoRA & Configuración adaptada a Fashion-MNIST; ejecución pendiente & Notebook; faltan adaptador entrenado, imágenes de comparación y registro real de pérdida \\
 \bottomrule
 \end{tabularx}
-\par\raggedright\vspace{5pt}\noindent\footnotesize\textit{Nota.} La DCGAN sí se ejecutó y produjo las salidas descritas; la corrida es breve y no demuestra calidad de producción. LoRA sigue pendiente hasta contar con acceso autorizado a Stable Diffusion v1.5 y ejecutar el cuaderno completo.\normalsize
+\par\raggedright\vspace{5pt}\noindent\footnotesize\textit{Nota.} La DCGAN sí se ejecutó y produjo las salidas descritas; la corrida es breve y no demuestra calidad de producción. LoRA se adaptó a Fashion-MNIST, pero su ejecución en Colab continúa pendiente.\normalsize
 \end{table}
 
 \begin{figure}[H]
@@ -125,7 +125,7 @@ Las GAN son sensibles a inicialización, razón de aprendizaje y balance entre g
 LoRA reduce los pesos que se ajustan, pero un conjunto pequeño puede causar sobreajuste. La comparación visual debe examinar si captions e imágenes se corresponden y describir límites sin afirmar mejoras no medidas. Antes de redistribuir imágenes o pesos se deben revisar las licencias del checkpoint y los datos. Las imágenes generadas pueden reflejar sesgos de las colecciones usadas; el trabajo no propone decisiones automatizadas sobre personas.
 
 \section{Conclusiones}
-Las prácticas presentan dos mecanismos distintos: competencia entre dos redes en una GAN y eliminación iterativa de ruido condicionada por texto en difusión latente. La GAN pequeña mostró reducción de MMD$^2$ en las cinco semillas, aunque su resolución y la métrica limitan lo que puede concluirse. La corrida de DCGAN en CIFAR-10 completó tres épocas y produjo registros y muestras, aunque su duración corta y el desequilibrio entre pérdidas limitan las conclusiones sobre calidad. La práctica LoRA queda como procedimiento reproducible, pero no como resultado experimental terminado: hace falta habilitar el acceso al modelo base, ejecutar el ajuste y comparar imágenes con los mismos prompts y semillas.
+Las prácticas presentan dos mecanismos distintos: competencia entre dos redes en una GAN y eliminación iterativa de ruido condicionada por texto en difusión latente. La GAN pequeña mostró reducción de MMD$^2$ en las cinco semillas, aunque su resolución y la métrica limitan lo que puede concluirse. La corrida de DCGAN en CIFAR-10 completó tres épocas y produjo registros y muestras, aunque su duración corta y el desequilibrio entre pérdidas limitan las conclusiones sobre calidad. La práctica LoRA queda configurada para un conjunto de prendas con licencia MIT y una comparación controlada; todavía se deben completar los pasos en Colab y registrar las imágenes y pérdidas observadas antes de presentarla como resultado experimental.
 
 \section{Referencias}
 \refapa{Bouchard, L.-F. (2022, 28 de agosto). Latent diffusion models: The architecture behind Stable Diffusion. \textit{Towards AI}. \url{https://pub.towardsai.net/latent-diffusion-models-the-architecture-behind-stable-diffusion-434ba7d91108}}
@@ -135,7 +135,8 @@ Las prácticas presentan dos mecanismos distintos: competencia entre dos redes e
 \refapa{Hu, E. J., Shen, Y., Wallis, P., Allen-Zhu, Z., Li, Y., Wang, S., Wang, L., \& Chen, W. (2021). LoRA: Low-rank adaptation of large language models. \textit{International Conference on Learning Representations}. \url{https://openreview.net/forum?id=nZeVKeeFYf9}}
 \refapa{Krizhevsky, A. (2009). Learning multiple layers of features from tiny images. University of Toronto. \url{https://www.cs.toronto.edu/~kriz/learning-features-2009-TR.pdf}}
 \refapa{Mohr, F. (2017, 4 de noviembre). Implementing a generative adversarial network (GAN/DCGAN) to draw human faces. \textit{Towards Data Science}. \url{https://medium.com/data-science/implementing-a-generative-adversarial-network-gan-dcgan-to-draw-human-faces-8291616904a}}
-\refapa{Pinkney, J. N. M. (2022). \textit{Pokémon BLIP captions} [Conjunto de datos]. Hugging Face. \url{https://huggingface.co/datasets/lambdalabs/pokemon-blip-captions}}
+\refapa{Xiao, H., Rasul, K., \& Vollgraf, R. (2017). Fashion-MNIST: A novel image dataset for benchmarking machine learning algorithms. \textit{arXiv}. \url{https://arxiv.org/abs/1708.07747}}
+\refapa{Zalando Research. (2017). \textit{Fashion-MNIST} [Conjunto de datos; licencia MIT]. GitHub. \url{https://github.com/zalandoresearch/fashion-mnist}}
 \refapa{PyTorch. (s. f.). \textit{DCGAN tutorial}. \url{https://docs.pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html}}
 \refapa{Rombach, R., Blattmann, A., Lorenz, D., Esser, P., \& Ommer, B. (2022). High-resolution image synthesis with latent diffusion models. En \textit{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition} (pp. 10684--10695). \url{https://doi.org/10.1109/CVPR52688.2022.01042}}
 \end{document}
