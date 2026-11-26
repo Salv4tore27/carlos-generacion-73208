@@ -6,7 +6,7 @@ Informe y código de dos prácticas generativas: una DCGAN no condicionada sobre
 
 - `main.tex`: informe APA en LaTeX.
 - `Carlos_DCGAN_CIFAR10.ipynb`: DCGAN de 64 × 64 para Colab GPU.
-- `Carlos_Diffusers_LoRA_FashionMNIST.ipynb`: ajuste LoRA exploratorio de 200 pasos sobre una muestra balanceada de Fashion-MNIST; requiere GPU y `HF_TOKEN` guardado en Secretos de Colab para el checkpoint. No usa el conjunto Pokémon, que muestra un aviso de retiro y exige solicitar acceso.
+- `Carlos_Diffusers_LoRA_FashionMNIST.ipynb`: ajuste LoRA exploratorio de 200 pasos sobre una muestra balanceada de Fashion-MNIST; requiere GPU; el checkpoint base es público y se descarga sin token. No usa el conjunto Pokémon, que muestra un aviso de retiro y exige solicitar acceso.
 - `gan_core.py` y `experimento_digitos.py`: GAN introductoria reproducible en NumPy.
 - `resultados_carlos/`: resultados medidos de esta versión de la GAN introductoria.
 

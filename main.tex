@@ -63,7 +63,7 @@ El cuaderno \texttt{\detokenize{Carlos_DCGAN_CIFAR10.ipynb}} usa CIFAR-10, un co
 \end{table}
 
 \subsection{Ajuste fino LoRA de Stable Diffusion}
-El cuaderno \texttt{\detokenize{Carlos_Diffusers_LoRA_FashionMNIST.ipynb}} parte de Fashion-MNIST, conjunto balanceado de 70.000 imágenes de prendas en diez categorías; aquí se seleccionan 500 ejemplos, 50 por clase (Xiao et al., 2017; Zalando Research, 2017). Para emplear el script \texttt{\detokenize{train_text_to_image_lora.py}} de Diffusers, las imágenes se convierten a RGB y las etiquetas se transforman en descripciones textuales sencillas. La configuración prevista es resolución de 256 píxeles, lote 1, acumulación de gradientes 4, precisión FP16, 200 pasos y semilla 42. La comparación mantiene iguales el prompt, la semilla y los pasos de inferencia para el modelo base y el adaptado. El cuaderno lee \texttt{HF\_TOKEN} desde Secretos de Colab y no guarda el token en el archivo.
+El cuaderno \texttt{\detokenize{Carlos_Diffusers_LoRA_FashionMNIST.ipynb}} parte de Fashion-MNIST, conjunto balanceado de 70.000 imágenes de prendas en diez categorías; aquí se seleccionan 500 ejemplos, 50 por clase (Xiao et al., 2017; Zalando Research, 2017). Para emplear el script \texttt{\detokenize{train_text_to_image_lora.py}} de Diffusers, las imágenes se convierten a RGB y las etiquetas se transforman en descripciones textuales sencillas. La configuración prevista es resolución de 256 píxeles, lote 1, acumulación de gradientes 4, precisión FP16, 200 pasos y semilla 42. La comparación mantiene iguales el prompt, la semilla y los pasos de inferencia para el modelo base y el adaptado. El checkpoint base es público y el cuaderno lo descarga sin token. Se deben respetar las condiciones CreativeML OpenRAIL-M antes de redistribuir sus pesos o derivados.
 
 \begin{figure}[H]
 \caption{Flujo de datos y entrenamiento de las dos prácticas}
@@ -135,6 +135,7 @@ Las prácticas presentan dos mecanismos distintos: competencia entre dos redes e
 \refapa{Hu, E. J., Shen, Y., Wallis, P., Allen-Zhu, Z., Li, Y., Wang, S., Wang, L., \& Chen, W. (2021). LoRA: Low-rank adaptation of large language models. \textit{International Conference on Learning Representations}. \url{https://openreview.net/forum?id=nZeVKeeFYf9}}
 \refapa{Krizhevsky, A. (2009). Learning multiple layers of features from tiny images. University of Toronto. \url{https://www.cs.toronto.edu/~kriz/learning-features-2009-TR.pdf}}
 \refapa{Mohr, F. (2017, 4 de noviembre). Implementing a generative adversarial network (GAN/DCGAN) to draw human faces. \textit{Towards Data Science}. \url{https://medium.com/data-science/implementing-a-generative-adversarial-network-gan-dcgan-to-draw-human-faces-8291616904a}}
+\refapa{Stable Diffusion v1-5. (s. f.). \textit{Stable Diffusion v1-5 model card}. Hugging Face. \url{https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5}}
 \refapa{Xiao, H., Rasul, K., \& Vollgraf, R. (2017). Fashion-MNIST: A novel image dataset for benchmarking machine learning algorithms. \textit{arXiv}. \url{https://arxiv.org/abs/1708.07747}}
 \refapa{Zalando Research. (2017). \textit{Fashion-MNIST} [Conjunto de datos; licencia MIT]. GitHub. \url{https://github.com/zalandoresearch/fashion-mnist}}
 \refapa{PyTorch. (s. f.). \textit{DCGAN tutorial}. \url{https://docs.pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html}}
