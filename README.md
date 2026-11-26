@@ -12,7 +12,7 @@ Informe y código de dos prácticas generativas: una DCGAN no condicionada sobre
 
 ## Estado honesto
 
-La GAN introductoria produce evidencia local en dígitos de 8 × 8. Los cuadernos DCGAN-CIFAR-10 y LoRA están preparados, pero **no se han ejecutado en Colab**; faltan sus imágenes generadas, curvas, registros y análisis posterior. El informe marca estos resultados como pendientes y no inventa salidas. Ejecutar cada cuaderno de principio a fin y descargar `/content/resultados_dcgan_cifar10` y `/content/resultados_lora_carlos` antes de entregar como práctica completa.
+La GAN introductoria produce evidencia local en dígitos de 8 × 8. La DCGAN se ejecutó en Colab con GPU T4: usó 5.000 imágenes de CIFAR-10, completó 3 épocas de 78 lotes y guardó cuadrículas, pérdidas y checkpoint en `/content/resultados_dcgan_cifar10`. Las pérdidas finales por época fueron D = 0.365, 0.028 y 0.010; G = 2.457, 4.561 y 5.600. Son resultados de una corrida breve y no prueban calidad o diversidad visual. El cuaderno LoRA está preparado, pero aún no se ejecuta: exige aceptar la licencia y disponer de acceso autorizado a Stable Diffusion v1.5 en Hugging Face; faltan checkpoint del adaptador, comparación de imágenes y registro de entrenamiento.
 
 ## Ejecución local de la línea base
 
